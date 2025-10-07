@@ -76,7 +76,7 @@ export default function TenQForm() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: idToken,
+          Authorization: `Bearer ${idToken}`,
         },
         body: JSON.stringify(payload),
       });
