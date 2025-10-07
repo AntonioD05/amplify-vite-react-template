@@ -1,25 +1,39 @@
-## AWS Amplify React+Vite Starter Template
+10-Q Inference (Amplify + Cognito + API Gateway + Lambda)
 
-This repository provides a starter template for creating applications using React+Vite and AWS Amplify, emphasizing easy setup for authentication, API, and database capabilities.
+Live app: https://main.d2pg9zfn1cap9l.amplifyapp.com
 
-## Overview
+A Cognito-protected React app (Vite + Amplify UI) that sends questions about a company’s SEC filings (10-Q/10-K) to a secure API. The API is fronted by API Gateway → Edge Lambda (proxy/validator) → Core Lambda (SecEdgar + Bedrock). Only signed-in users can invoke the backend.
 
-This template equips you with a foundational React application integrated with AWS Amplify, streamlined for scalability and performance. It is ideal for developers looking to jumpstart their project with pre-configured AWS services like Cognito, AppSync, and DynamoDB.
+This repo contains the frontend only. The Lambdas/API are deployed in AWS and referenced via environment variables.
 
-## Features
+Features
 
-- **Authentication**: Setup with Amazon Cognito for secure user authentication.
-- **API**: Ready-to-use GraphQL endpoint with AWS AppSync.
-- **Database**: Real-time database powered by Amazon DynamoDB.
+Amplify Authenticator (Cognito User Pool)
 
-## Deploying to AWS
+Form built with Amplify UI: Partner, Year, Period, Question
 
-For detailed instructions on deploying your application, refer to the [deployment section](https://docs.amplify.aws/react/start/quickstart/#deploy-a-fullstack-app-to-aws) of our documentation.
+Client-side guard for impossible periods (e.g., “2025 Annual” before year end)
 
-## Security
+Sends ID token in Authorization: Bearer <jwt> to a Cognito-protected API
 
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+Clean answer card + error states
 
-## License
+Architecture
+[ React (Amplify UI) ]
+   │ (ID token)
+   ▼
+[ API Gateway HTTP API ]
+   └─ Cognito User Pool Authorizer (JWT)
+      │
+      ▼
+[ Edge Lambda (Python) ]
+   - Validates payload
+   - Reads JWT claims (sub/email)
+   - Invokes Core Lambda (boto3)
+      │
+      ▼
+[ Core Lambda ]
+   - SecEdgar: fetch 10-Q/10-K text
+   - Bedrock (Claude) for Q&A
+   - Returns JSON
 
-This library is licensed under the MIT-0 License. See the LICENSE file.
